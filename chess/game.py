@@ -40,7 +40,16 @@ class ChessGame:
         return legal_moves
         
     def is_move_legal(self, from_pos, to_pos):
-        """Check if a move is legal (doesn't leave king in check)."""
+        """Check if a move is legal (valid for piece and doesn't leave king in check)."""
+        piece = self.board.get_piece(from_pos)
+        if not piece:
+            return False
+        
+        # First check if the move is valid for this piece
+        possible_moves = piece.get_possible_moves(self.board)
+        if to_pos not in possible_moves:
+            return False
+        
         # Detect special move type
         special_move = self._detect_special_move(from_pos, to_pos)
         
