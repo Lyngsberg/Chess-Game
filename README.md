@@ -6,7 +6,7 @@ A fully playable chess game with a graphical interface, built with Python and py
 
 - ✅ **Playable Chess Game**: Complete implementation of chess rules
   - All piece movements (Pawn, Knight, Bishop, Rook, Queen, King)
-  - Special moves: Pawn double move, pawn promotion
+  - Special moves: Pawn double move, pawn promotion, en passant, castling (kingside & queenside)
   - Check and checkmate detection
   - Stalemate detection
   - Move validation (prevents moving into check)
@@ -120,7 +120,8 @@ Open source - feel free to use and modify!
 Contributions are welcome! Areas for improvement:
 - Enhanced AI algorithms
 - Deep Neural Network integration
-- Additional chess rules (en passant, castling)
 - Move history and undo functionality
 - Game saving/loading
+- Time controls
 - Online multiplayer support
+- Opening book and endgame tablebase integration

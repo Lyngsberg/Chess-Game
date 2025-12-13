@@ -40,12 +40,38 @@ class ChessGame:
         
     def is_move_legal(self, from_pos, to_pos):
         """Check if a move is legal (doesn't leave king in check)."""
+        # Detect special move type
+        special_move = self._detect_special_move(from_pos, to_pos)
+        
         # Create a copy of the board to test the move
         test_board = self.board.copy()
-        test_board.move_piece(from_pos, to_pos)
+        test_board.move_piece(from_pos, to_pos, special_move)
         
         # Check if our king would be in check after the move
         return not test_board.is_in_check(self.current_player)
+    
+    def _detect_special_move(self, from_pos, to_pos):
+        """Detect if this is a special move (en passant, castling)."""
+        piece = self.board.get_piece(from_pos)
+        if not piece:
+            return None
+        
+        from_row, from_col = from_pos
+        to_row, to_col = to_pos
+        
+        # Check for castling
+        if piece.__class__.__name__ == 'King' and abs(to_col - from_col) == 2:
+            if to_col > from_col:
+                return 'castle_kingside'
+            else:
+                return 'castle_queenside'
+        
+        # Check for en passant
+        if piece.__class__.__name__ == 'Pawn':
+            if abs(to_col - from_col) == 1 and self.board.get_piece(to_pos) is None:
+                return 'en_passant'
+        
+        return None
         
     def make_move(self, from_pos, to_pos):
         """Attempt to make a move."""
@@ -56,9 +82,12 @@ class ChessGame:
             
         if not self.is_move_legal(from_pos, to_pos):
             return False
+        
+        # Detect special moves
+        special_move = self._detect_special_move(from_pos, to_pos)
             
         # Make the move
-        self.board.move_piece(from_pos, to_pos)
+        self.board.move_piece(from_pos, to_pos, special_move)
         self.move_history.append((from_pos, to_pos, piece.__class__.__name__))
         
         # Check for pawn promotion

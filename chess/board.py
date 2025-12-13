@@ -8,6 +8,7 @@ class Board:
     def __init__(self):
         self.grid = [[None for _ in range(8)] for _ in range(8)]
         self.captured_pieces = {'white': [], 'black': []}
+        self.last_move = None  # Track last move for en passant
         self.setup_initial_position()
         
     def setup_initial_position(self):
@@ -50,26 +51,60 @@ class Board:
         row, col = position
         return self.grid[row][col]
         
-    def move_piece(self, from_pos, to_pos):
+    def move_piece(self, from_pos, to_pos, special_move=None):
         """Move piece from one position to another."""
         piece = self.get_piece(from_pos)
         if piece is None:
             return False
             
-        # Capture if there's a piece at target
+        from_row, from_col = from_pos
+        to_row, to_col = to_pos
+        
+        # Handle en passant capture
+        if special_move == 'en_passant':
+            # Remove the captured pawn
+            captured_row = from_row
+            captured_col = to_col
+            captured_piece = self.grid[captured_row][captured_col]
+            if captured_piece:
+                self.captured_pieces[captured_piece.color].append(captured_piece)
+                self.grid[captured_row][captured_col] = None
+        # Handle castling
+        elif special_move == 'castle_kingside':
+            # Move the rook
+            rook = self.grid[from_row][7]
+            self.grid[from_row][5] = rook
+            self.grid[from_row][7] = None
+            if rook:
+                rook.position = (from_row, 5)
+                rook.has_moved = True
+        elif special_move == 'castle_queenside':
+            # Move the rook
+            rook = self.grid[from_row][0]
+            self.grid[from_row][3] = rook
+            self.grid[from_row][0] = None
+            if rook:
+                rook.position = (from_row, 3)
+                rook.has_moved = True
+        
+        # Capture if there's a piece at target (normal capture)
         target = self.get_piece(to_pos)
         if target:
             self.captured_pieces[target.color].append(target)
             
         # Move the piece
-        from_row, from_col = from_pos
-        to_row, to_col = to_pos
-        
         self.grid[to_row][to_col] = piece
         self.grid[from_row][from_col] = None
         
         piece.position = to_pos
         piece.has_moved = True
+        
+        # Track last move for en passant
+        self.last_move = {
+            'piece': piece,
+            'from': from_pos,
+            'to': to_pos
+        }
         
         return True
         
@@ -96,7 +131,8 @@ class Board:
         """Check if a square is attacked by any piece of given color."""
         attacking_pieces = self.get_all_pieces(by_color)
         for piece in attacking_pieces:
-            if position in piece.get_possible_moves(self):
+            # Get basic moves only (no castling) to avoid recursion
+            if position in piece.get_possible_moves(self, for_attack_check=True):
                 return True
         return False
         
@@ -116,6 +152,7 @@ class Board:
             'white': list(self.captured_pieces['white']),
             'black': list(self.captured_pieces['black'])
         }
+        new_board.last_move = self.last_move  # Copy last move info
         
         for row in range(8):
             for col in range(8):
