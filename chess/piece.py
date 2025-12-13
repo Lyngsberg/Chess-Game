@@ -58,7 +58,8 @@ class Pawn(Piece):
                         
                     # En passant
                     elif (board.last_move and 
-                          isinstance(board.last_move['piece'], Pawn) and
+                          isinstance(board.last_move.get('piece'), Pawn) and
+                          board.last_move.get('from') and board.last_move.get('to') and
                           abs(board.last_move['from'][0] - board.last_move['to'][0]) == 2 and
                           board.last_move['to'][0] == row and
                           board.last_move['to'][1] == col + dc):
