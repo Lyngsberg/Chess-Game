@@ -26,6 +26,8 @@ class ChessGUI:
         self.game = ChessGame()
         self.ai_opponent = ai_opponent
         self.ai = ChessAI('black') if ai_opponent else None
+        self.ai_move_delay = 500  # milliseconds
+        self.last_ai_move_time = 0
         self.font = pygame.font.Font(None, 36)
         self.status_font = pygame.font.Font(None, 28)
         
@@ -149,14 +151,17 @@ class ChessGUI:
         running = True
         
         while running:
-            # Handle AI moves
+            # Handle AI moves with delay for better UX
+            current_time = pygame.time.get_ticks()
             if (self.ai_opponent and 
                 self.game.current_player == 'black' and 
-                not self.game.game_over):
+                not self.game.game_over and
+                current_time - self.last_ai_move_time > self.ai_move_delay):
                 move = self.ai.get_move(self.game)
                 if move:
                     from_pos, to_pos = move
                     self.game.make_move(from_pos, to_pos)
+                    self.last_ai_move_time = current_time
                     
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -169,6 +174,7 @@ class ChessGUI:
                     if event.key == pygame.K_r:
                         # Reset game
                         self.game = ChessGame()
+                        self.last_ai_move_time = 0
                         
             self.draw()
             clock.tick(60)

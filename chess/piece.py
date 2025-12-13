@@ -48,18 +48,23 @@ class Pawn(Piece):
         for dc in [-1, 1]:
             capture_pos = (row + direction, col + dc)
             if board.is_valid_position(capture_pos):
-                target = board.get_piece(capture_pos)
-                if target and target.color != self.color:
+                # For attack checking, pawns always attack diagonally
+                if for_attack_check:
                     moves.append(capture_pos)
-                    
-                # En passant (not for attack check to avoid issues)
-                elif (not for_attack_check and
-                      board.last_move and 
-                      isinstance(board.last_move['piece'], Pawn) and
-                      abs(board.last_move['from'][0] - board.last_move['to'][0]) == 2 and
-                      board.last_move['to'][0] == row and
-                      board.last_move['to'][1] == col + dc):
-                    moves.append(capture_pos)
+                else:
+                    target = board.get_piece(capture_pos)
+                    if target and target.color != self.color:
+                        moves.append(capture_pos)
+                        
+                    # En passant
+                    elif (board.last_move and 
+                          isinstance(board.last_move['piece'], Pawn) and
+                          abs(board.last_move['from'][0] - board.last_move['to'][0]) == 2 and
+                          board.last_move['to'][0] == row and
+                          board.last_move['to'][1] == col + dc):
+                        # Verify the pawn is actually there
+                        if board.get_piece((row, col + dc)) is not None:
+                            moves.append(capture_pos)
         
         return moves
 

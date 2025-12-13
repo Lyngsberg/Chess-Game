@@ -1,5 +1,6 @@
 """Chess game logic and state management."""
 from chess.board import Board
+from chess.piece import King, Pawn, Queen
 
 
 class ChessGame:
@@ -60,14 +61,14 @@ class ChessGame:
         to_row, to_col = to_pos
         
         # Check for castling
-        if piece.__class__.__name__ == 'King' and abs(to_col - from_col) == 2:
+        if isinstance(piece, King) and abs(to_col - from_col) == 2:
             if to_col > from_col:
                 return 'castle_kingside'
             else:
                 return 'castle_queenside'
         
         # Check for en passant
-        if piece.__class__.__name__ == 'Pawn':
+        if isinstance(piece, Pawn):
             if abs(to_col - from_col) == 1 and self.board.get_piece(to_pos) is None:
                 return 'en_passant'
         
@@ -91,7 +92,7 @@ class ChessGame:
         self.move_history.append((from_pos, to_pos, piece.__class__.__name__))
         
         # Check for pawn promotion
-        if piece.__class__.__name__ == 'Pawn':
+        if isinstance(piece, Pawn):
             if (piece.color == 'white' and to_pos[0] == 0) or \
                (piece.color == 'black' and to_pos[0] == 7):
                 self.promote_pawn(to_pos)
@@ -109,7 +110,6 @@ class ChessGame:
         
     def promote_pawn(self, position):
         """Promote a pawn to a queen (simplified - always promote to queen)."""
-        from chess.piece import Queen
         piece = self.board.get_piece(position)
         if piece:
             new_queen = Queen(piece.color, position)
