@@ -1,3 +1,4 @@
 fmoves/
 __pycache__/
 models/
+.venv/
